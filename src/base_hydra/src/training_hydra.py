@@ -152,30 +152,16 @@ def main_hydra(
         bin_model.cuda()
 
         # training
-        args = (
-            config.intermediate_training_config
-            if config.intermediate_training_config
-            else {}
-        )
+        if config.intermediate_training_config is None:
+            raise ValueError(
+                "intermediate_training_config が Hydra config で指定されていません。"
+                " training.intermediate.* を設定してください。"
+            )
+        args = config.intermediate_training_config
         training_args = {
             "logging_dir": paths["inter_logging_dir"],
             "output_dir": paths["inter_output_dir"],
-            "eval_strategy": "epoch",
-            "logging_strategy": "epoch",
-            "save_strategy": "epoch",
-            "save_total_limit": 1,
-            "fp16": True,
             "label_names": ["label"],
-            "lr_scheduler_type": "constant",
-            "metric_for_best_model": "loss",
-            "load_best_model_at_end": True,
-            "per_device_train_batch_size": 8,
-            "per_device_eval_batch_size": 16,
-            "num_train_epochs": 100,
-            "remove_unused_columns": False,
-            "report_to": "tensorboard",
-            "gradient_accumulation_steps": 4,
-            "learning_rate": 1e-5,
             **args,
         }
         training_args = TrainingArguments(**training_args)
@@ -221,25 +207,16 @@ def main_hydra(
 
     collator = DataCollator(tokenizer)
 
-    args = config.fine_tuning_config if config.fine_tuning_config else {}
+    if config.fine_tuning_config is None:
+        raise ValueError(
+            "fine_tuning_config が Hydra config で指定されていません。"
+            " training.fine_tuning.* を設定してください。"
+        )
+    args = config.fine_tuning_config
     training_args = {
         "logging_dir": paths["ft_logging_dir"],
         "output_dir": paths["ft_output_dir"],
-        "eval_strategy": "epoch",
-        "logging_strategy": "epoch",
-        "save_strategy": "epoch",
-        "save_total_limit": 1,
-        "fp16": True,
         "label_names": ["label"],
-        "lr_scheduler_type": "constant",
-        "metric_for_best_model": "loss",
-        "load_best_model_at_end": True,
-        "per_device_train_batch_size": 8,
-        "per_device_eval_batch_size": 16,
-        "num_train_epochs": 100,
-        "remove_unused_columns": False,
-        "report_to": "tensorboard",
-        "learning_rate": 1e-5,
         **args,
     }
     training_args = TrainingArguments(**training_args)
