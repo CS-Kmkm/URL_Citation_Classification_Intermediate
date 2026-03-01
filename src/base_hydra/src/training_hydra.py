@@ -173,7 +173,7 @@ def main_hydra(
             "per_device_eval_batch_size": 16,
             "num_train_epochs": 100,
             "remove_unused_columns": False,
-            "report_to": "all",
+            "report_to": "tensorboard",
             "gradient_accumulation_steps": 4,
             "learning_rate": 1e-5,
             **args,
@@ -238,7 +238,7 @@ def main_hydra(
         "per_device_eval_batch_size": 16,
         "num_train_epochs": 100,
         "remove_unused_columns": False,
-        "report_to": "all",
+        "report_to": "tensorboard",
         "learning_rate": 1e-5,
         **args,
     }
