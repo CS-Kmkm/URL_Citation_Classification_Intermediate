@@ -3,6 +3,10 @@ from transformers import AutoModel
 from transformers.modeling_outputs import ModelOutput
 
 
+def _is_modernbert(model_name: str) -> bool:
+    return "modernbert" in model_name.lower() or "ModernBERT" in model_name
+
+
 class CLS_bert(torch.nn.Module):
     """
     text classification model
@@ -13,7 +17,9 @@ class CLS_bert(torch.nn.Module):
         self, vocab_size: int, n_classes: list[int], model_name="bert-base-uncased"
     ) -> None:
         super().__init__()
-        self.bert = AutoModel.from_pretrained(model_name)
+        self._modernbert = _is_modernbert(model_name)
+        kwargs = {"attn_implementation": "sdpa"} if self._modernbert else {}
+        self.bert = AutoModel.from_pretrained(model_name, **kwargs)
         self.bert.resize_token_embeddings(vocab_size)
 
         self.n_classes = n_classes
@@ -33,12 +39,11 @@ class CLS_bert(torch.nn.Module):
         position_ids=None,
         label=None,
     ):
-        X = self.bert(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-        ).last_hidden_state[:, 0, :]
+        bert_inputs = dict(input_ids=input_ids, attention_mask=attention_mask)
+        if not self._modernbert:
+            bert_inputs["token_type_ids"] = token_type_ids
+            bert_inputs["position_ids"] = position_ids
+        X = self.bert(**bert_inputs).last_hidden_state[:, 0, :]
         X = self.dropout(X)
 
         logits = []
@@ -61,7 +66,9 @@ class Bin_bert(torch.nn.Module):
         self, vocab_size: int, n_label: int, model_name="bert-base-uncased"
     ) -> None:
         super().__init__()
-        self.bert = AutoModel.from_pretrained(model_name)
+        self._modernbert = _is_modernbert(model_name)
+        kwargs = {"attn_implementation": "sdpa"} if self._modernbert else {}
+        self.bert = AutoModel.from_pretrained(model_name, **kwargs)
         self.bert.resize_token_embeddings(vocab_size)
 
         self.n_label = n_label
@@ -81,12 +88,11 @@ class Bin_bert(torch.nn.Module):
         position_ids=None,
         label=None,
     ):
-        X = self.bert(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-        ).last_hidden_state[:, 0, :]
+        bert_inputs = dict(input_ids=input_ids, attention_mask=attention_mask)
+        if not self._modernbert:
+            bert_inputs["token_type_ids"] = token_type_ids
+            bert_inputs["position_ids"] = position_ids
+        X = self.bert(**bert_inputs).last_hidden_state[:, 0, :]
         X = self.dropout(X)
 
         logits = []
