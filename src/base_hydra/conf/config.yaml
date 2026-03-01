@@ -1,0 +1,41 @@
+# =============================================
+# URL Citation Classification - Default Config
+# =============================================
+# Usage:
+#   python url_cite_run.py                              # デフォルト設定で実行
+#   python url_cite_run.py seed=42                      # シードを変更
+#   python url_cite_run.py model=bert_large              # モデルを変更
+#   python url_cite_run.py training=large_model          # 学習設定を変更
+#   python url_cite_run.py n_sample=50000 seed=42        # 複数パラメータ変更
+#   python url_cite_run.py --multirun seed=111,5374,93279 n_sample=1000,5000,10000  # グリッド実行
+
+defaults:
+  - model: bert_base
+  - training: default
+  - _self_
+
+# --- Experiment settings ---
+seed: 111
+n_sample: 300000
+fine_tuning_only: false
+inter_split_seed: 111
+task_name: url_citation_random_${n_sample}
+
+# --- Data settings ---
+data:
+  test_seed: 111
+  test_size: 0.1
+  train_seed: 12539
+  data_path: data/tsunokake_data_base.csv
+
+# --- Output settings ---
+# 出力先を DataCitationAnalysis/output/urlcitation/hydra/ 以下に統一する。
+# HYDRA_OUTPUT_BASE 環境変数は url_cite_run_hydra.py が __file__ を基点に自動設定する。
+hydra:
+  run:
+    # 通常実行: output/urlcitation/hydra/runs/<date>/<time>/
+    dir: ${oc.env:HYDRA_OUTPUT_BASE}/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    # --multirun 実行: output/urlcitation/hydra/multirun/<date>/<time>/
+    dir: ${oc.env:HYDRA_OUTPUT_BASE}/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}

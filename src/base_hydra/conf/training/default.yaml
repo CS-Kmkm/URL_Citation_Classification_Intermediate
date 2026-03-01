@@ -1,0 +1,16 @@
+# Default training hyperparameters (for bert-base)
+intermediate:
+  per_device_train_batch_size: 16
+  gradient_accumulation_steps: 2
+  per_device_eval_batch_size: 16
+  learning_rate: 1e-5
+  num_train_epochs: 100
+  early_stopping_patience: 2
+
+fine_tuning:
+  per_device_train_batch_size: 16
+  gradient_accumulation_steps: 2
+  per_device_eval_batch_size: 16
+  learning_rate: 1e-5
+  num_train_epochs: 100
+  early_stopping_patience: 5
