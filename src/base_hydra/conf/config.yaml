@@ -2,12 +2,12 @@
 # URL Citation Classification - Default Config
 # =============================================
 # Usage:
-#   python url_cite_run.py                              # デフォルト設定で実行
-#   python url_cite_run.py seed=42                      # シードを変更
-#   python url_cite_run.py model=bert_large              # モデルを変更
-#   python url_cite_run.py training=large_model          # 学習設定を変更
-#   python url_cite_run.py n_sample=50000 seed=42        # 複数パラメータ変更
-#   python url_cite_run.py --multirun seed=111,5374,93279 n_sample=1000,5000,10000  # グリッド実行
+#   uv run python src/base_hydra/src/url_cite_run_hydra.py                              # デフォルト設定で実行
+#   uv run python src/base_hydra/src/url_cite_run_hydra.py seed=42                      # シードを変更
+#   uv run python src/base_hydra/src/url_cite_run_hydra.py model=bert_large             # モデルを変更
+#   uv run python src/base_hydra/src/url_cite_run_hydra.py training=large_model         # 学習設定を変更
+#   uv run python src/base_hydra/src/url_cite_run_hydra.py n_sample=50000 seed=42       # 複数パラメータ変更
+#   uv run python src/base_hydra/src/url_cite_run_hydra.py --multirun seed=111,5374,93279 n_sample=1000,5000,10000  # グリッド実行
 
 defaults:
   - model: bert_base
@@ -27,6 +27,20 @@ data:
   test_size: 0.1
   train_seed: 12539
   data_path: data/tsunokake_data_base.csv
+
+# --- Experiment tracking ---
+wandb:
+  enabled: false
+  project: url-citation-classification
+  entity: null
+  group: null
+  job_type: train
+  mode: online
+  name: ${task_name}_${model.encoder_model_name}_${seed}
+  tags: []
+  notes: null
+  log_model: false
+  save_code: false
 
 # --- Output settings ---
 # 出力先を DataCitationAnalysis/output/urlcitation/hydra/ 以下に統一する。
