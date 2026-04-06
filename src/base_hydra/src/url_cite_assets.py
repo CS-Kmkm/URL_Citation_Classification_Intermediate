@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal, Optional, TypedDict
 
 
@@ -49,6 +49,21 @@ Strategy = Literal["random", "binary-balanced", "multi-balanced"]
 
 
 @dataclass
+class WandbConfig:
+    enabled: bool = False
+    project: Optional[str] = None
+    entity: Optional[str] = None
+    group: Optional[str] = None
+    job_type: str = "train"
+    mode: str = "online"
+    name: Optional[str] = None
+    tags: list[str] = field(default_factory=list)
+    notes: Optional[str] = None
+    log_model: bool = False
+    save_code: bool = False
+
+
+@dataclass
 class TrainingConfig:
     n_classes: list[int]
     special_tokens: list[str]
@@ -66,3 +81,5 @@ class TrainingConfig:
     output_base_dir: Optional[str] = None  # Hydra output directory (if None, use legacy paths)
     inter_early_stopping_patience: int = 2
     ft_early_stopping_patience: int = 5
+    wandb: Optional[WandbConfig] = None
+    resolved_config: Optional[dict] = None

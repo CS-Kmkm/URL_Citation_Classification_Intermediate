@@ -25,7 +25,7 @@ from sklearn.model_selection import train_test_split
 
 from preprocess_hydra import preprocess as preprocess_hydra
 from training_hydra import main_hydra
-from url_cite_assets import SPECIAL_TOKENS, SplitedData, TrainingConfig
+from url_cite_assets import SPECIAL_TOKENS, SplitedData, TrainingConfig, WandbConfig
 
 log = logging.getLogger(__name__)
 
@@ -102,6 +102,11 @@ def cite_main(cfg: DictConfig):
     output_base_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     log.info("Hydra output dir: %s", output_base_dir)
     log.info("Config:\n%s", OmegaConf.to_yaml(cfg))
+    resolved_cfg = OmegaConf.to_container(cfg, resolve=True)
+
+    config_save_path = os.path.join(output_base_dir, "resolved_config.yaml")
+    OmegaConf.save(cfg, config_save_path)
+    log.info("Resolved config saved to %s", config_save_path)
 
     data = load_data(
         data_path=cfg.data.data_path,
@@ -139,13 +144,23 @@ def cite_main(cfg: DictConfig):
         output_base_dir=output_base_dir,
         inter_early_stopping_patience=inter_patience,
         ft_early_stopping_patience=ft_patience,
+        wandb=WandbConfig(
+            enabled=cfg.wandb.enabled,
+            project=cfg.wandb.project,
+            entity=cfg.wandb.entity,
+            group=cfg.wandb.group,
+            job_type=cfg.wandb.job_type,
+            mode=cfg.wandb.mode,
+            name=cfg.wandb.name,
+            tags=list(cfg.wandb.tags),
+            notes=cfg.wandb.notes,
+            log_model=cfg.wandb.log_model,
+            save_code=cfg.wandb.save_code,
+        ),
+        resolved_config=resolved_cfg,
     )
 
     main_hydra(data, config)
-
-    config_save_path = os.path.join(output_base_dir, "resolved_config.yaml")
-    OmegaConf.save(cfg, config_save_path)
-    log.info("Resolved config saved to %s", config_save_path)
 
 
 @hydra.main(config_path="../conf", config_name="config", version_base=None)
